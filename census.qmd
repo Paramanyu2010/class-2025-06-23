@@ -1,0 +1,68 @@
+---
+title: "NYC Census Tracts"
+format: html
+---
+
+```{r}
+#| echo: false
+#| warning: false
+#| message: false
+
+library(maps)
+library(ggplot2)
+
+# Get NYC base map data
+nyc_map <- map_data("county", region = "new york") |>
+  subset(subregion %in% c("new york", "bronx", "queens", "kings", "richmond"))
+
+# Create synthetic point data (population centers)
+set.seed(123)
+point_data <- data.frame(
+  long = c(rnorm(100, mean = -73.97, sd = 0.05),  # Manhattan
+  rnorm(100, mean = -73.87, sd = 0.04),  # Brooklyn
+  rnorm(100, mean = -73.82, sd = 0.05),  # Queens
+  rnorm(100, mean = -73.90, sd = 0.03),  # Bronx
+  rnorm(100, mean = -74.15, sd = 0.02)), # Staten Island
+  lat = c(rnorm(100, mean = 40.78, sd = 0.03),
+          rnorm(100, mean = 40.65, sd = 0.04),
+          rnorm(100, mean = 40.75, sd = 0.05),
+          rnorm(100, mean = 40.85, sd = 0.03),
+          rnorm(100, mean = 40.58, sd = 0.02)),
+  borough = rep(c("Manhattan", "Brooklyn", "Queens", "Bronx", "Staten Island"), each = 100)
+)
+
+# Create enhanced visualization
+ggplot() +
+  # Base map
+  geom_polygon(
+    data = nyc_map,
+    aes(x = long, y = lat, group = group),
+    fill = "#f0f0f0",
+    color = "white",
+    linewidth = 0.5
+  ) +
+  # Population centers as points
+  geom_point(
+    data = point_data,
+    aes(x = long, y = lat, color = borough),
+    size = 2,
+    alpha = 0.6
+  ) +
+  # Styling
+  scale_color_manual(values = c("#E41A1C", "#377EB8", "#4DAF4A", "#984EA3", "#FF7F00")) +
+  coord_fixed(1.3) +
+  labs(
+    title = "New York City Population Density Simulation",
+    subtitle = "Each point represents a simulated population center",
+    caption = "Base map: R 'maps' package",
+    color = "Borough"
+  ) +
+  theme_void() +
+  theme(
+    plot.title = element_text(hjust = 0.5, face = "bold", size = 16),
+    plot.subtitle = element_text(hjust = 0.5, color = "gray40", size = 10),
+    legend.position = "bottom",
+    plot.background = element_rect(fill = "white", color = NA),
+    legend.text = element_text(size = 8)
+  )
+```
